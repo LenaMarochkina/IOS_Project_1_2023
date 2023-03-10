@@ -1,0 +1,32 @@
+{
+  "settings": {
+    "EDITOR": "nano",
+    "VIRTUAL": "vi"
+  },
+  "history": [
+    {
+      "name": ".bashrc",
+      "group": "bash",
+      "dates": [
+        "2020-01-01 00:00:00",
+        "2020-01-01 01:00:00"
+      ]
+    },
+    {
+      "name": ".bash_profile",
+      "group": "bash",
+      "dates": [
+        "2020-01-01 00:00:00",
+        "2020-01-01 01:00:00"
+      ]
+    },
+    {
+      "name": ".gitconfig",
+      "group": "git",
+      "dates": [
+        "2020-01-01 00:00:00",
+        "2020-01-01 01:00:00"
+      ]
+    }
+  ]
+}
