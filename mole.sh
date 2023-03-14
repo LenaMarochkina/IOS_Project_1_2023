@@ -103,6 +103,24 @@ print_help() {
   echo "  [-b DATE]                         Záznamy o otevřených (editovaných) souborech po tomto datu nebudou uvažovány."
 }
 
+# Get file editor from the config file
+get_file_editor() {
+  EDITOR=$(echo "$CONFIG_DATA" | jq -r ".settings.EDITOR")
+  VISUAL=$(echo "$CONFIG_DATA" | jq -r ".settings.VISUAL")
+
+  if [ -z "$EDITOR" ]; then
+    if [ -z "$VISUAL" ]; then
+      FILE_EDITOR="vi"
+    else
+      FILE_EDITOR="$VISUAL"
+    fi
+  else
+    FILE_EDITOR="$EDITOR"
+  fi
+
+  echo "$FILE_EDITOR"
+}
+
 # Read config from JSON
 # @param $1: path to JSON file
 # @example: read_from_config file.json
