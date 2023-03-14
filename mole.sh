@@ -135,7 +135,7 @@ bash_array_to_json() {
 # @param $3 before date
 # @returns: filtered JSON data
 filter_data() {
-#  json_groups="$(bash_array_to_json "$1")"
+  #  json_groups="$(bash_array_to_json "$1")"
   data=$(echo "$CONFIG_DATA" | jq ".history")
   # Filter by GROUPS
   data=$(echo "$data" | jq "map(if((.group - (.group - [\"bash\", \"git\"]) | length | . > 0)) then . else empty end)")
