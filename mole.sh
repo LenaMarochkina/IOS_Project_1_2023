@@ -31,7 +31,7 @@ done
 
 #Date validation
 validate_date() {
-   data=$(echo "$1" | awk '{
+  data=$(echo "$1" | awk '{
         if (split($1, a, "-") == 3) {
           year=a[1]
           month=a[2]
