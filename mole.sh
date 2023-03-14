@@ -96,11 +96,11 @@ parse_config_file() {
     {
       \"settings\": {
         \"EDITOR\": \"nano\",
-        \"VIRTUAL\": \"vi\"
+        \"VISUAL\": \"vi\"
       }
     }
   "
-  
+
   # config_path=$MOLE_RC
   config_path="./mole_json.json"
 
@@ -172,17 +172,16 @@ prepare_data_before_save() {
 # @param $1: file name
 # @returns: 0 if file is not in history, 1 if it is
 check_if_file_in_history() {
-   # checks if file is already in history, if not, adds it
-    if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.name==\"$1\")")" ]; then
-      return 0
-    else
-      return 1
-    fi
+  # checks if file is already in history, if not, adds it
+  if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.name==\"$1\")")" ]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 # Adds file to history if it doesn't exist
 # @param $1: file name
-# @param $2: group name
 process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
 
@@ -209,6 +208,7 @@ add_file_time() {
 }
 
 # Get most frequently used file
+# @param $1: file name
 most_frequently_used() {
   if [ -z "$1" ]; then
     echo "No first arg"
@@ -219,15 +219,22 @@ most_frequently_used() {
 }
 
 #most_frequently_used abc
-#filter_data
+#CONFIG_DATA=$(filter_data)
 #array=("bash" "git")
 #bash_array_to_json "${array[@]}"
 #check_if_file_in_history .cockrc
 #process_file .cock
+
 #echo "$CONFIG_DATA"
 #echo "$PREPROCESSED_DATA"
 
 #add_file_group .gitconfig git2
 #add_file_time .gitconfig
-echo "$CONFIG_DATA"
+#process_open
+#echo "$CONFIG_DATA"
+#execute_command "$COMMAND"
+
+echo "$FILTERED_HISTORY"
+
+process_list
 #bash_array_to_json "${groups[@]}"
