@@ -233,7 +233,17 @@ process_file() {
     CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$1\", \"group\": [], \"dates\": []}]")
   fi
 
-  update_file_history "$1" "$2"
+  update_file_history "$1"
+}
+
+# Updates file history with groups and time
+# @param $1: file name
+update_file_history() {
+  for i in "${groups[@]}"; do
+    add_file_group "$1" "$i"
+  done
+
+  add_file_time "$1"
 }
 
 # Adds group to file
