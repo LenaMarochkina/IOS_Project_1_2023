@@ -272,6 +272,41 @@ most_frequently_used() {
   echo "$data" | jq ". | length"
 }
 
+# Executes command based on script argument
+# @param $1: command name
+execute_command() {
+  if [[ "$1" == "open" ]]; then
+    process_open
+  elif [[ "$1" == "list" ]]; then
+    process_list
+  elif [[ "$1" == "secret-log" ]]; then
+    process_secret_log
+  fi
+}
+
+# Open command handler
+process_open() {
+  process_file "$FILE"
+
+  FILE_EDITOR=$(get_file_editor)
+  # remove from commentary in production
+  #  eval "$FILE_EDITOR" "$FILE"
+}
+
+# List command handler
+process_list() {
+  # TODO: add tabulation and remove the last iteration
+  range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
+  for i in $(seq 0 "$range"); do
+    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.["$i"].name): \(.[$i].group | join(\", \"))\"" | tr -d '"')
+    echo "$line"
+  done
+}
+
+process_secret_log() {
+  echo ""
+}
+
 #most_frequently_used abc
 #CONFIG_DATA=$(filter_data)
 #array=("bash" "git")
