@@ -181,10 +181,13 @@ filter_data() {
   # Filter by GROUPS
   data=$(echo "$data" | jq "map(if((.group - (.group - [\"bash\", \"git\"]) | length | . > 0)) then . else empty end)")
   # Filter by AFTER_DATE
-  data=$(echo "$data" | jq "map(if(any(.dates[]; . > \"2020-01-01\")) then . else empty end)")
+  if [ -n "$DATE_AFTER" ]; then
+    data=$(echo "$data" | jq "map(if(any(.dates[]; . > \"$DATE_AFTER\" )) then . else empty end)")
+  fi
   # Filter by BEFORE_DATE
-  data=$(echo "$data" | jq "map(if(any(.dates[]; . < \"2020-01-03\")) then . else empty end)")
-
+  if [ -n "$DATE_BEFORE" ]; then
+    data=$(echo "$data" | jq "map(if(any(.dates[]; . < \"$DATE_BEFORE\")) then . else empty end)")
+  fi
   echo "$data"
 }
 
