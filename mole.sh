@@ -55,7 +55,7 @@ validate_date() {
           print $0
         }
     }')
-    echo "$data"
+  echo "$data"
 }
 
 # Function print_help to output help message
