@@ -7,6 +7,7 @@ DATE_AFTER=""
 DATE_BEFORE=""
 MOST_USED=0
 groups=()
+MOLE_RC="./mole_json.json"
 
 # parse arguments
 while [ "$#" -gt 0 ]; do
@@ -142,8 +143,10 @@ parse_config_file() {
     }
   "
 
-  # config_path=$MOLE_RC
+#   config_path=$MOLE_RC
+
   config_path="./mole_json.json"
+
 
   if [ ! -f $config_path ]; then
     echo "$INITIAL_FILE_DATA" > $config_path
@@ -210,6 +213,7 @@ PREPROCESSED_DATA=$(preprocess_data)
 # @returns: data prepared for save
 prepare_data_before_save() {
   data=$(echo "$1" | jq "del(.popularity)")
+  echo "$data"
 }
 
 # Check if file is in history, if not, add it
@@ -218,21 +222,21 @@ prepare_data_before_save() {
 check_if_file_in_history() {
   # checks if file is already in history, if not, adds it
   if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.name==\"$1\")")" ]; then
-    return 0
+    echo false
   else
-    return 1
+    echo true
   fi
 }
 
-# Adds file to history if it doesn't exist
+# Adds file to history if it doesn't exist and updates it
 # @param $1: file name
 process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
-
-  if [ -z "$file_in_history" ]; then
+  echo "$file_in_history"
+  if [ "$file_in_history" == "false" ]; then
+    echo "file not zero"
     CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$1\", \"group\": [], \"dates\": []}]")
   fi
-
   update_file_history "$1"
 }
 
@@ -242,7 +246,6 @@ update_file_history() {
   for i in "${groups[@]}"; do
     add_file_group "$1" "$i"
   done
-
   add_file_time "$1"
 }
 
@@ -259,6 +262,10 @@ add_file_group() {
 add_file_time() {
   history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$1\") then .dates += [\"$(date +"%Y-%m-%d %T")\"] else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
+}
+
+output_data_to_json() {
+  echo "$1" | jq '.' > "$MOLE_RC"
 }
 
 # Get most frequently used file
@@ -291,6 +298,7 @@ process_open() {
   FILE_EDITOR=$(get_file_editor)
   # remove from commentary in production
   #  eval "$FILE_EDITOR" "$FILE"
+  output_data_to_json "$CONFIG_DATA"
 }
 
 # List command handler
