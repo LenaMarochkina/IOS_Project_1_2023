@@ -182,7 +182,8 @@ filter_data() {
   #  json_groups="$(bash_array_to_json "$1")"
   data=$(echo "$CONFIG_DATA" | jq ".history")
   # Filter by GROUPS
-  data=$(echo "$data" | jq "map(if((.group - (.group - [\"bash\", \"git\"]) | length | . > 0)) then . else empty end)")
+  # TODO: Fix filter by groups
+#  data=$(echo "$data" | jq "map(if((.group - (.group - ([\"${groups[*]}\"]) | length | . > 0)) then . else empty end)")
   # Filter by AFTER_DATE
   if [ -n "$DATE_AFTER" ]; then
     data=$(echo "$data" | jq "map(if(any(.dates[]; . > \"$DATE_AFTER\" )) then . else empty end)")
@@ -303,10 +304,12 @@ process_open() {
 
 # List command handler
 process_list() {
-  # TODO: add tabulation and remove the last iteration
+  # TODO: add tabulation and remove the last iteration + '-' for files without groups
+  FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.name) | sort_by(.group)")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
+  range=$((range - 1))
   for i in $(seq 0 "$range"); do
-    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.["$i"].name): \(.[$i].group | join(\", \"))\"" | tr -d '"')
+    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].name): \(.[$i].group | join(\", \"))\"" | tr -d '"')
     echo "$line"
   done
 }
@@ -330,8 +333,7 @@ process_secret_log() {
 #process_open
 #echo "$CONFIG_DATA"
 #execute_command "$COMMAND"
-
-echo "$FILTERED_HISTORY"
-
-process_list
+process_open
+#echo "$FILE"
+#process_list
 #bash_array_to_json "${groups[@]}"
