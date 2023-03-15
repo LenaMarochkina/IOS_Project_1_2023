@@ -203,7 +203,6 @@ FILTERED_HISTORY=$(filter_data)
 # @returns: preprocessed JSON data
 preprocess_data() {
   data=$(echo "$FILTERED_HISTORY" | jq "map(. + {\"popularity\": (.dates | length)})")
-
   echo "$data"
 }
 
@@ -272,12 +271,13 @@ output_data_to_json() {
 # Get most frequently used file
 # @param $1: file name
 most_frequently_used() {
-  if [ -z "$1" ]; then
-    echo "No first arg"
-  fi
-
-  data=$(echo "$CONFIG_DATA" | jq ".history[0].dates")
-  echo "$data" | jq ". | length"
+#  if [ -z "$1" ]; then
+#    echo "No first arg"
+#  fi
+#
+#  data=$(echo "$CONFIG_DATA" | jq ".history[0].dates")
+#  echo "$data" | jq ". | length"
+    echo ""
 }
 
 # Executes command based on script argument
@@ -292,10 +292,24 @@ execute_command() {
   fi
 }
 
+# Choose file to open
+choose_file() {
+  if [[ "$MOST_USED" == 1 ]]; then
+      data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
+      FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+    else
+      data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.dates) | reverse")
+      FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+    fi
+    echo "$FILE"
+}
+
 # Open command handler
 process_open() {
+  if [[ -z "$FILE" ]]; then
+    FILE=$(choose_file)
+  fi
   process_file "$FILE"
-
   FILE_EDITOR=$(get_file_editor)
   # remove from commentary in production
   #  eval "$FILE_EDITOR" "$FILE"
@@ -326,6 +340,7 @@ process_secret_log() {
 #process_file .cock
 
 #echo "$CONFIG_DATA"
+#preprocess_data
 #echo "$PREPROCESSED_DATA"
 
 #add_file_group .gitconfig git2
@@ -337,3 +352,4 @@ process_open
 #echo "$FILE"
 #process_list
 #bash_array_to_json "${groups[@]}"
+
