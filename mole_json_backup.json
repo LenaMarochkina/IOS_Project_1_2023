@@ -1,31 +1,31 @@
 {
   "settings": {
     "EDITOR": "nano",
-    "VIRTUAL": "vi"
+    "VISUAL": "vi"
   },
   "history": [
     {
       "name": ".bashrc",
-      "group": ["bash"],
+      "group": [],
       "dates": [
         "2020-01-02 00:00:00",
+        "2020-01-02 01:00:00",
         "2020-01-02 01:00:00"
       ]
     },
     {
       "name": ".bash_profile",
-      "group": ["bash"],
+      "group": ["zash"],
       "dates": [
-        "2020-01-01 00:00:00",
-        "2020-01-01 01:00:00"
+        "2020-01-03 00:00:00"
       ]
     },
     {
       "name": ".gitconfig",
-      "group": ["git"],
+      "group": ["git", "git2"],
       "dates": [
         "2020-01-01 00:00:00",
-        "2020-01-01 01:00:00"
+        "2020-01-04 01:00:00"
       ]
     }
   ]
