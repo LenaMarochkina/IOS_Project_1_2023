@@ -260,7 +260,7 @@ add_file_group() {
 # Adds date to file
 # @param $1: file name
 add_file_time() {
-  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$1\") then .dates += [\"$(date +"%Y-%m-%d %T")\"] else . end)")
+  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$1\") then .dates = [\"$(date +"%Y-%m-%d %T")\"] + .dates else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
 }
 
