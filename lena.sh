@@ -36,17 +36,18 @@ while [ "$#" -gt 0 ]; do
       COMMAND="$1"
       shift
 
+    elif [ -d "$1" ]; then
+          DIRECTORY="$1"
+          shift
+        fi
     # TODO: if file/directory doesn't exist, leave it to the file editor to handle
     # if argument is a file
-    elif [ -f "$1" ]; then
-      FILE="$1"
-      shift
+#    elif [ -f "$1" ]; then
+#      FILE="$1"
+#      shift
 
     # if argument is a directory
-    elif [ -d "$1" ]; then
-      DIRECTORY="$1"
-      shift
-    fi
+
     ;;
   esac
 done
