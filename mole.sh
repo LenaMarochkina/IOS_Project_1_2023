@@ -220,11 +220,12 @@ prepare_data_before_save() {
 }
 
 # Check if file is in history, if not, add it
-# @param $1: file name
+# @param $1: file path
 # @returns: 0 if file is not in history, 1 if it is
 check_if_file_in_history() {
   # checks if file is already in history, if not, adds it
-  if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.name==\"$1\")")" ]; then
+  file_path=$(readlink -f "$1")
+  if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.path==\"$file_path\")")" ]; then
     echo false
   else
     echo true
@@ -237,13 +238,14 @@ process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
   if [ "$file_in_history" == "false" ]; then
     echo "file not zero"
-    CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$1\", \"group\": [], \"dates\": []}]")
+    name=$(basename "$1")
+    CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$name\", \"path\": \"$1\", \"group\": [], \"dates\": []}]")
   fi
   update_file_history "$1"
 }
 
 # Updates file history with groups and time
-# @param $1: file name
+# @param $1: file path
 update_file_history() {
   for i in "${groups[@]}"; do
     add_file_group "$1" "$i"
@@ -255,14 +257,14 @@ update_file_history() {
 # @param $1: file name
 # @param $2: group name
 add_file_group() {
-  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$1\") then .group += [\"$2\"] else . end)")
+  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.path == \"$1\") then if any(.group[]; . == \"$2\") then . else .group+=[\"$2\"] end else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
 }
 
 # Adds date to file
 # @param $1: file name
 add_file_time() {
-  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$1\") then .dates = [\"$(date +"%Y-%m-%d %T")\"] + .dates else . end)")
+  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.path == \"$1\") then .dates = [\"$(date +"%Y-%m-%d_%H-%M-%S")\"] + .dates else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
 }
 
@@ -311,7 +313,8 @@ process_open() {
   if [[ -z "$FILE" ]]; then
     FILE=$(choose_file)
   fi
-  process_file "$FILE"
+  file_path=$(readlink -f "$FILE")
+  process_file "$file_path"
   FILE_EDITOR=$(get_file_editor)
   #  eval "$FILE_EDITOR" "$FILE"
   exit_code=$?
