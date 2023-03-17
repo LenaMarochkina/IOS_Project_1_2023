@@ -143,13 +143,12 @@ parse_config_file() {
     }
   "
 
-#   config_path=$MOLE_RC
+  #   config_path=$MOLE_RC
 
   config_path="./mole_json.json"
 
-
   if [ ! -f $config_path ]; then
-    echo "$INITIAL_FILE_DATA" > $config_path
+    echo "$INITIAL_FILE_DATA" >$config_path
   fi
 
   # TODO: Check is path exists and create with folders if needed
@@ -183,7 +182,7 @@ filter_data() {
   data=$(echo "$CONFIG_DATA" | jq ".history")
   # Filter by GROUPS
   # TODO: Fix filter by groups
-#  data=$(echo "$data" | jq "map(if((.group - (.group - ([\"${groups[*]}\"]) | length | . > 0)) then . else empty end)")
+  #  data=$(echo "$data" | jq "map(if((.group - (.group - ([\"${groups[*]}\"]) | length | . > 0)) then . else empty end)")
   # Filter by AFTER_DATE
   if [ -n "$DATE_AFTER" ]; then
     data=$(echo "$data" | jq "map(if(any(.dates[]; . > \"$DATE_AFTER\" )) then . else empty end)")
@@ -232,7 +231,6 @@ check_if_file_in_history() {
 # @param $1: file name
 process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
-  echo "$file_in_history"
   if [ "$file_in_history" == "false" ]; then
     echo "file not zero"
     CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$1\", \"group\": [], \"dates\": []}]")
@@ -271,13 +269,13 @@ output_data_to_json() {
 # Get most frequently used file
 # @param $1: file name
 most_frequently_used() {
-#  if [ -z "$1" ]; then
-#    echo "No first arg"
-#  fi
-#
-#  data=$(echo "$CONFIG_DATA" | jq ".history[0].dates")
-#  echo "$data" | jq ". | length"
-    echo ""
+  #  if [ -z "$1" ]; then
+  #    echo "No first arg"
+  #  fi
+  #
+  #  data=$(echo "$CONFIG_DATA" | jq ".history[0].dates")
+  #  echo "$data" | jq ". | length"
+  echo ""
 }
 
 # Executes command based on script argument
@@ -295,13 +293,13 @@ execute_command() {
 # Choose file to open
 choose_file() {
   if [[ "$MOST_USED" == 1 ]]; then
-      data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
-      FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
-    else
-      data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.dates) | reverse")
-      FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
-    fi
-    echo "$FILE"
+    data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
+    FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+  else
+    data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.dates) | reverse")
+    FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+  fi
+  echo "$FILE"
 }
 
 # Open command handler
