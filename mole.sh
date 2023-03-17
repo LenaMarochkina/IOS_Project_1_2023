@@ -48,6 +48,10 @@ while [ "$#" -gt 0 ]; do
     elif [ -d "$1" ]; then
       DIRECTORY="$1"
       shift
+
+    else
+      FILE="$1"
+      shift
     fi
     ;;
   esac
@@ -309,9 +313,11 @@ process_open() {
   fi
   process_file "$FILE"
   FILE_EDITOR=$(get_file_editor)
-  # remove from commentary in production
   #  eval "$FILE_EDITOR" "$FILE"
+  exit_code=$?
   output_data_to_json "$CONFIG_DATA"
+  echo "$exit_code"
+  return "$exit_code"
 }
 
 # List command handler
