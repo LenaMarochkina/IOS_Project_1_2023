@@ -328,10 +328,14 @@ process_open() {
 process_list() {
   # TODO: add tabulation and remove the last iteration + '-' for files without groups
   FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.name) | sort_by(.group)")
+  max_indent=$(echo "$FILTERED_HISTORY" | jq "max_by(.name | length) | .name | length")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
   range=$((range - 1))
   for i in $(seq 0 "$range"); do
-    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].name): \(.[$i].group | join(\", \"))\"" | tr -d '"')
+    name_length=$(echo "$FILTERED_HISTORY" | jq ".[$i].name | length")
+    spaces_number=$(($max_indent - $name_length))
+    indent=$(create_indent "$spaces_number")
+    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].name):$indent \(if .[$i].group | length | . > 0 then (.[$i].group | join(\",\"))  else \"-\" end)\"" | tr -d '"')
     echo "$line"
   done
 }
@@ -354,6 +358,17 @@ process_secret_log() {
     line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].path);\(.[$i].dates | reverse | join(\";\"))\"" | tr -d '"')
     echo "$line" | bzip2 >>"$(get_secret_log_path)"
   done
+}
+
+# create indentation
+# @param $1: number of spaces
+# @returns: indentation string
+create_indent() {
+  ident=""
+  for i in $(seq 1 "$1"); do
+    ident+=" "
+  done
+  echo "$ident"
 }
 
 #most_frequently_used abc
