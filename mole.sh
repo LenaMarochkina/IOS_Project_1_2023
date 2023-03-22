@@ -188,7 +188,6 @@ bash_array_to_json() {
 }
 
 # Filter JSON history data
-#echo "$CONFIG_DATA"
 # @returns: filtered JSON data
 filter_data() {
   #  json_groups="$(bash_array_to_json "$1")"
@@ -196,8 +195,8 @@ filter_data() {
   # Filter by GROUPS
   if [ -n "$groups" ]; then
     # get group array into string for correct jq parsing
-    groups_str=$(printf "\"%s\"," "${groups[@]}" | sed 's/,$//')
-    data=$(echo "$data" | jq "map(if (.group - [$groups_str]) | length | . > 0  then . else empty end)")
+    groups_str="$(printf "\"%s\"," "${groups[@]}" | sed 's/,$//')"
+    data=$(echo "$data" | jq "map(if (.group - (.group - [$groups_str])) | length | . > 0  then . else empty end)")
   fi
   # Filter by AFTER_DATE
   if [ -n "$DATE_AFTER" ]; then
