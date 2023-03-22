@@ -375,10 +375,12 @@ process_list() {
 # Get secret log path
 # @returns: path to secret log
 get_secret_log_path() {
-  secret_log_path=$(dirname "$MOLE_RC")
   user_name="$(whoami)"
   date="$(date +"%Y-%m-%d_%H-%M-%S")"
-  secret_log_path+="/log_"$user_name"_"$date".bz2"
+  secret_log_path="/home/"$user_name"/.mole/log_"$user_name"_"$date".bz2"
+  if [ ! -d "/home/"$user_name"/.mole" ]; then
+    mkdir "/home/"$user_name"/.mole"
+  fi
   echo "$secret_log_path"
 }
 
@@ -387,6 +389,7 @@ process_secret_log() {
   FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.path)")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
   range=$((range - 1))
+  echo "$(get_secret_log_path)"
   for i in $(seq 0 "$range"); do
     line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].path);\(.[$i].dates | reverse | join(\";\"))\"" | tr -d '"')
     echo "$line" | bzip2 >>"$(get_secret_log_path)"
