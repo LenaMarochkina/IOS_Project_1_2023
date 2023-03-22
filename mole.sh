@@ -7,7 +7,7 @@ DATE_AFTER=""
 DATE_BEFORE=""
 MOST_USED=0
 groups=()
-MOLE_RC="./mole_json.json"
+MOLE_RC="$HOME/.config/molerc.json"
 
 # Function print_help to output help message
 print_help() {
@@ -168,13 +168,13 @@ parse_config_file() {
       \"settings\": {
         \"EDITOR\": \"nano\",
         \"VISUAL\": \"vi\"
-      }
+      },
+      \"history\": []
     }
   "
 
-  #   config_path=$MOLE_RC
+  config_path=$MOLE_RC
 
-  config_path="./mole_json.json"
 
   if [ ! -f $config_path ]; then
     echo "$INITIAL_FILE_DATA" >$config_path
@@ -389,7 +389,6 @@ process_secret_log() {
   FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.path)")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
   range=$((range - 1))
-  echo "$(get_secret_log_path)"
   for i in $(seq 0 "$range"); do
     line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].path);\(.[$i].dates | reverse | join(\";\"))\"" | tr -d '"')
     echo "$line" | bzip2 >>"$(get_secret_log_path)"
