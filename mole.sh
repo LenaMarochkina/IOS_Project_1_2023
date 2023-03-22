@@ -9,6 +9,55 @@ MOST_USED=0
 groups=()
 MOLE_RC="./mole_json.json"
 
+# Function print_help to output help message
+print_help() {
+  echo "  mole – wrapper pro efektivní použití textového editoru s možností automatického výběru nejčastěji či posledně modifikovaného souboru."
+  echo "POUŽITÍ"
+  echo "  mole -h"
+  echo "  mole [-g GROUP] FILE"
+  echo "  mole [-m] [FILTERS] [DIRECTORY]"
+  echo "  mole list [FILTERS] [DIRECTORY]"
+  echo "Popis"
+  echo "  -h                                Vypíše nápovědu k použití skriptu"
+  echo "  mole [-g GROUP] FILE              Zadaný soubor bude otevřen."
+  echo "                                    Pokud byl zadán přepínač -g, dané otevření souboru bude zároveň přiřazeno"
+  echo "                                    do skupiny s názvem GROUP. GROUP může být název jak existující, tak nové skupiny."
+  echo "  mole [-m] [FILTERS] [DIRECTORY]   Pokud DIRECTORY odpovídá existujícímu adresáři, skript z daného adresáře vybere soubor, který má být otevřen."
+  echo "  mole list [FILTERS] [DIRECTORY]   Skript zobrazí seznam souborů, které byly v daném adresáři otevřeny (editovány) pomocí skriptu."
+  echo "Filtry"
+  echo "  [-g GROUP1[,GROUP2[,...]]]        Specifikace skupin. Soubor bude uvažován (pro potřeby otevření nebo výpisu) pouze tehdy,"
+  echo "                                    pokud jeho spuštění spadá alespoň do jedné z těchto skupin."
+  echo "  [-a DATE]                         Záznamy o otevřených (editovaných) souborech před tímto datem nebudou uvažovány."
+  echo "  [-b DATE]                         Záznamy o otevřených (editovaných) souborech po tomto datu nebudou uvažovány."
+}
+
+#Date validation
+validate_date() {
+  data=$(echo "$1" | awk '{
+        if (split($1, a, "-") == 3) {
+          year=a[1]
+          month=a[2]
+          day=a[3]
+        }
+        if (day < 1 || day > 31) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else if (month < 1 || month > 12) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else if (year < 0) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else if (day == 31 && (month == 4 || month == 6 || month == 9 || month == 11)) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else if (day >= 30 && month == 2) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else if (day == 29 && month == 2 && (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0))) {
+          printf "Invalid date: %s", $0 >> "/dev/stderr"
+        } else {
+          print $0
+        }
+    }')
+  echo "$data"
+}
+
 # parse arguments
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -56,57 +105,6 @@ while [ "$#" -gt 0 ]; do
     ;;
   esac
 done
-
-#Date validation
-validate_date() {
-  data=$(echo "$1" | awk '{
-        if (split($1, a, "-") == 3) {
-          year=a[1]
-          month=a[2]
-          day=a[3]
-        } else {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        }
-        if (day < 1 || day > 31) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else if (month < 1 || month > 12) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else if (year < 0) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else if (day == 31 && (month == 4 || month == 6 || month == 9 || month == 11)) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else if (day >= 30 && month == 2) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else if (day == 29 && month == 2 && (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0))) {
-          printf "Invalid date: %s\n", $0 >> "/dev/stderr"
-        } else {
-          print $0
-        }
-    }')
-  echo "$data"
-}
-
-# Function print_help to output help message
-print_help() {
-  echo "  mole – wrapper pro efektivní použití textového editoru s možností automatického výběru nejčastěji či posledně modifikovaného souboru."
-  echo "POUŽITÍ"
-  echo "  mole -h"
-  echo "  mole [-g GROUP] FILE"
-  echo "  mole [-m] [FILTERS] [DIRECTORY]"
-  echo "  mole list [FILTERS] [DIRECTORY]"
-  echo "Popis"
-  echo "  -h                                Vypíše nápovědu k použití skriptu"
-  echo "  mole [-g GROUP] FILE              Zadaný soubor bude otevřen."
-  echo "                                    Pokud byl zadán přepínač -g, dané otevření souboru bude zároveň přiřazeno"
-  echo "                                    do skupiny s názvem GROUP. GROUP může být název jak existující, tak nové skupiny."
-  echo "  mole [-m] [FILTERS] [DIRECTORY]   Pokud DIRECTORY odpovídá existujícímu adresáři, skript z daného adresáře vybere soubor, který má být otevřen."
-  echo "  mole list [FILTERS] [DIRECTORY]   Skript zobrazí seznam souborů, které byly v daném adresáři otevřeny (editovány) pomocí skriptu."
-  echo "Filtry"
-  echo "  [-g GROUP1[,GROUP2[,...]]]        Specifikace skupin. Soubor bude uvažován (pro potřeby otevření nebo výpisu) pouze tehdy,"
-  echo "                                    pokud jeho spuštění spadá alespoň do jedné z těchto skupin."
-  echo "  [-a DATE]                         Záznamy o otevřených (editovaných) souborech před tímto datem nebudou uvažovány."
-  echo "  [-b DATE]                         Záznamy o otevřených (editovaných) souborech po tomto datu nebudou uvažovány."
-}
 
 # Get file editor from the config file
 get_file_editor() {
