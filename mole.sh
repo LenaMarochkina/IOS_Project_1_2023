@@ -58,6 +58,19 @@ validate_date() {
   echo "$data"
 }
 
+# function to see if the string is a directory
+# @return true if the string is a directory
+is_a_directory() {
+  file_basename=$(basename "$1")
+  if [[ "$FILE" == "" ]]; then
+    echo "false"
+  elif [[ "$file_basename" == "$1" ]]; then
+    echo "false"
+  else
+    echo "true"
+  fi
+}
+
 # parse arguments
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -315,6 +328,16 @@ process_open() {
     exit 0
   fi
 
+  # if file is a directory, exit with error
+  if [[ "$MOST_USED" == 1 ]]; then
+    file_is_a_directory=$(is_a_directory "$FILE")
+    if [[ "$file_is_a_directory" == "true" ]]; then
+      echo "Error: file is a directory"
+      exit 1
+    fi
+  fi
+
+  # if file is not set, choose file to open
   if [[ "$FILE" == "" ]]; then
     FILE=$(choose_file)
   fi
