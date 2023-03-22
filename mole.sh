@@ -321,17 +321,16 @@ choose_file() {
 
 # Open command handler
 process_open() {
-  if [[ -z "$FILE" ]]; then
+  if [[ "$FILE" == "" ]]; then
     FILE=$(choose_file)
   fi
   file_path=$(readlink -f "$FILE")
   process_file "$file_path"
+  #  runs file editor on the file
   FILE_EDITOR=$(get_file_editor)
-  #  eval "$FILE_EDITOR" "$FILE"
-  exit_code=$?
+
+  # eval "$FILE_EDITOR" "$FILE"
   output_data_to_json "$CONFIG_DATA"
-  echo "$exit_code"
-  return "$exit_code"
 }
 
 # List command handler
