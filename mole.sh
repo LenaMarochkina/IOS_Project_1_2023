@@ -66,16 +66,31 @@ while [ "$#" -gt 0 ]; do
     exit 0
     ;;
   -a)
-    DATE_AFTER="$2"
+    #    validate the date
+    date=$(validate_date "$2")
+    if [ "$date" = "$2" ]; then
+      DATE_AFTER="$2"
+    else
+      echo "$date"
+      exit 1
+    fi
+
     shift 2
     ;;
   -b)
-    DATE_BEFORE="$2"
+    #    validate the date
+    date=$(validate_date "$2")
+    if [ "$date" = "$2" ]; then
+      DATE_BEFORE="$2"
+    else
+      echo "$date"
+      exit 1
+    fi
+
     shift 2
     ;;
   -g)
     IFS=',' read -r -a groups <<<"$2"
-    echo "Groups: ${groups[*]}"
     shift 2
     ;;
   -m)
@@ -87,7 +102,6 @@ while [ "$#" -gt 0 ]; do
       COMMAND="$1"
       shift
 
-    # TODO: if file/directory doesn't exist, leave it to the file editor to handle
     # if argument is a file
     elif [ -f "$1" ]; then
       FILE="$1"
@@ -100,7 +114,6 @@ while [ "$#" -gt 0 ]; do
 
     else
       FILE="$1"
-      shift
     fi
     ;;
   esac
