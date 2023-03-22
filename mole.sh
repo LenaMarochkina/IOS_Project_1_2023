@@ -299,10 +299,11 @@ choose_file() {
   # if most used flag is set, choose the most used file
   if [[ "$MOST_USED" == 1 ]]; then
     data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
-    FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+    FILE=$(echo "$data" | jq ".[0].path" | tr -d '"')
+  # else choose the latest edited file
   else
     data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.dates) | reverse")
-    FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
+    FILE=$(echo "$data" | jq ".[0].path" | tr -d '"')
   fi
   echo "$FILE"
 }
