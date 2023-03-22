@@ -114,6 +114,7 @@ while [ "$#" -gt 0 ]; do
 
     else
       FILE="$1"
+      shift
     fi
     ;;
   esac
@@ -165,8 +166,6 @@ parse_config_file() {
   if [ ! -f $config_path ]; then
     echo "$INITIAL_FILE_DATA" >$config_path
   fi
-
-  # TODO: Check is path exists and create with folders if needed
 
   read_from_config $config_path
 }
@@ -248,7 +247,6 @@ check_if_file_in_history() {
 process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
   if [ "$file_in_history" == "false" ]; then
-    #    echo "file not zero"
     name=$(basename "$1")
     CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$name\", \"path\": \"$1\", \"group\": [], \"dates\": []}]")
   fi
@@ -296,7 +294,9 @@ execute_command() {
 }
 
 # Choose file to open
+# @returns: file name
 choose_file() {
+  # if most used flag is set, choose the most used file
   if [[ "$MOST_USED" == 1 ]]; then
     data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
     FILE=$(echo "$data" | jq ".[0].name" | tr -d '"')
@@ -313,12 +313,19 @@ process_open() {
     FILE=$(choose_file)
   fi
   file_path=$(readlink -f "$FILE")
-  process_file "$file_path"
-  #  runs file editor on the file
-  FILE_EDITOR=$(get_file_editor)
 
-  # eval "$FILE_EDITOR" "$FILE"
+  # add file with groups/ dates to history
+  process_file "$file_path"
+
+  FILE_EDITOR=$(get_file_editor)
+  # run editor on file
+  eval "$FILE_EDITOR" "$FILE"
+  # get exit code
+  exit_code=$?
+  # save data to config file
   output_data_to_json "$CONFIG_DATA"
+
+  return $exit_code
 }
 
 # List command handler
@@ -346,6 +353,7 @@ get_secret_log_path() {
   echo "$secret_log_path"
 }
 
+# Secret log command handler
 process_secret_log() {
   FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.path)")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
@@ -367,25 +375,4 @@ create_indent() {
   echo "$ident"
 }
 
-#most_frequently_used abc
-#CONFIG_DATA=$(filter_data)
-#array=("bash" "git")
-#bash_array_to_json "${array[@]}"
-#check_if_file_in_history .cockrc
-#process_file .cock
-
-#echo "$CONFIG_DATA"
-#preprocess_data
-#echo "$PREPROCESSED_DATA"
-
-#add_file_group .gitconfig git2
-#add_file_time .gitconfig
-#process_open
-#echo "$CONFIG_DATA"
 execute_command "$COMMAND"
-#process_open
-#process_secret_log
-#echo "$FILE"
-#process_list
-#bash_array_to_json "${groups[@]}"
-
