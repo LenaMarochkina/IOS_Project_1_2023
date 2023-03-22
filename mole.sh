@@ -248,7 +248,7 @@ check_if_file_in_history() {
 process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
   if [ "$file_in_history" == "false" ]; then
-    echo "file not zero"
+    #    echo "file not zero"
     name=$(basename "$1")
     CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$name\", \"path\": \"$1\", \"group\": [], \"dates\": []}]")
   fi
@@ -280,19 +280,7 @@ add_file_time() {
 }
 
 output_data_to_json() {
-  echo "$1" | jq '.' > "$MOLE_RC"
-}
-
-# Get most frequently used file
-# @param $1: file name
-most_frequently_used() {
-  #  if [ -z "$1" ]; then
-  #    echo "No first arg"
-  #  fi
-  #
-  #  data=$(echo "$CONFIG_DATA" | jq ".history[0].dates")
-  #  echo "$data" | jq ". | length"
-  echo ""
+  echo "$1" | jq '.' >"$MOLE_RC"
 }
 
 # Executes command based on script argument
@@ -335,7 +323,6 @@ process_open() {
 
 # List command handler
 process_list() {
-  # TODO: add tabulation and remove the last iteration + '-' for files without groups
   FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.name) | sort_by(.group)")
   max_indent=$(echo "$FILTERED_HISTORY" | jq "max_by(.name | length) | .name | length")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
@@ -395,9 +382,9 @@ create_indent() {
 #add_file_time .gitconfig
 #process_open
 #echo "$CONFIG_DATA"
-#execute_command "$COMMAND"
+execute_command "$COMMAND"
 #process_open
-process_secret_log
+#process_secret_log
 #echo "$FILE"
 #process_list
 #bash_array_to_json "${groups[@]}"
