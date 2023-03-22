@@ -310,6 +310,11 @@ choose_file() {
 
 # Open command handler
 process_open() {
+  # if filters apply to no files, exit
+  if [ "$FILTERED_HISTORY" == [] ]; then
+    exit 0
+  fi
+
   if [[ "$FILE" == "" ]]; then
     FILE=$(choose_file)
   fi
