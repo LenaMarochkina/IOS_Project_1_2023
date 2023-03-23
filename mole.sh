@@ -84,7 +84,7 @@ while [ "$#" -gt 0 ]; do
     if [ "$date" = "$2" ]; then
       DATE_AFTER="$2"
     else
-      echo "$date"
+      >&2 echo "$date"
       exit 1
     fi
 
@@ -96,7 +96,7 @@ while [ "$#" -gt 0 ]; do
     if [ "$date" = "$2" ]; then
       DATE_BEFORE="$2"
     else
-      echo "$date"
+      >&2 echo "$date"
       exit 1
     fi
 
@@ -122,7 +122,7 @@ while [ "$#" -gt 0 ]; do
 
     # if argument is a directory
     elif [ -d "$1" ]; then
-      DIRECTORY="$1"
+      DIRECTORY=$(realpath "$1")
       shift
 
     else
@@ -174,7 +174,6 @@ parse_config_file() {
   "
 
   config_path=$MOLE_RC
-
 
   if [ ! -f $config_path ]; then
     echo "$INITIAL_FILE_DATA" >$config_path
@@ -332,16 +331,20 @@ choose_file() {
 # Open command handler
 process_open() {
   # if filters apply to no files, exit
-  if [ "$FILTERED_HISTORY" == [] ]; then
-    exit 0
+  if [[ -n "$DATE_AFTER" || -n "$DATE_BEFORE" || "$MOST_USED" == 1 ]]; then
+    if [[ "$FILTERED_HISTORY" == [] ]]; then
+      >&2 echo "No files match filters"
+      exit 1
+    fi
   fi
 
-  # if file is a directory, exit with error
+  # handle most used flag
   if [[ "$MOST_USED" == 1 ]]; then
-    file_is_a_directory=$(is_a_directory "$FILE")
-    if [[ "$file_is_a_directory" == "true" ]]; then
-      echo "Error: file is a directory"
+    if [[ "$FILE" != "" ]]; then
+      >&2 echo "Cannot use -m flag with file name"
       exit 1
+    else
+      FILE=$(choose_file)
     fi
   fi
 
@@ -367,7 +370,7 @@ process_open() {
 
 # List command handler
 process_list() {
-  FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.name) | sort_by(.group)")
+  FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq "sort_by(.group) | sort_by(.name)")
   max_indent=$(echo "$FILTERED_HISTORY" | jq "max_by(.name | length) | .name | length")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
   range=$((range - 1))
@@ -407,11 +410,11 @@ process_secret_log() {
 # @param $1: number of spaces
 # @returns: indentation string
 create_indent() {
-  ident=""
+  indent=""
   for i in $(seq 1 "$1"); do
-    ident+=" "
+    indent+=" "
   done
-  echo "$ident"
+  echo "$indent"
 }
 
 execute_command "$COMMAND"
