@@ -202,8 +202,11 @@ bash_array_to_json() {
 # Filter JSON history data
 # @returns: filtered JSON data
 filter_data() {
-  #  json_groups="$(bash_array_to_json "$1")"
   data=$(echo "$CONFIG_DATA" | jq ".history")
+
+  # Filter by working directory
+  data=$(echo "$data" | jq "map(if .path == \"$DIRECTORY\" then . else empty end)")
+
   # Filter by GROUPS
   if [ -n "$groups" ]; then
     # get group array into string for correct jq parsing
@@ -247,8 +250,8 @@ prepare_data_before_save() {
 # @returns: 0 if file is not in history, 1 if it is
 check_if_file_in_history() {
   # checks if file is already in history, if not, adds it
-  file_path=$(readlink -f "$1")
-  if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.path==\"$file_path\")")" ]; then
+  name=$(basename "$1")
+  if [ -z "$(echo "$CONFIG_DATA" | jq ".history[] | select(.name==\"$name\")")" ]; then
     echo false
   else
     echo true
@@ -261,7 +264,10 @@ process_file() {
   file_in_history="$(check_if_file_in_history "$1")"
   if [ "$file_in_history" == "false" ]; then
     name=$(basename "$1")
-    CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$name\", \"path\": \"$1\", \"group\": [], \"dates\": []}]")
+    path=$(readlink -f "$1")
+    abs_path=$(dirname "$1")
+
+    CONFIG_DATA=$(echo "$CONFIG_DATA" | jq ".history += [{\"name\": \"$name\", \"path\": \"$abs_path\", \"group\": [], \"dates\": []}]")
   fi
   update_file_history "$1"
 }
@@ -279,14 +285,16 @@ update_file_history() {
 # @param $1: file name
 # @param $2: group name
 add_file_group() {
-  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.path == \"$1\") then if any(.group[]; . == \"$2\") then . else .group+=[\"$2\"] end else . end)")
+  name=$(basename "$1")
+  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$name\") then if any(.group[]; . == \"$2\") then . else .group+=[\"$2\"] end else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
 }
 
 # Adds date to file
 # @param $1: file name
 add_file_time() {
-  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.path == \"$1\") then .dates = [\"$(date +"%Y-%m-%d_%H-%M-%S")\"] + .dates else . end)")
+  name=$(basename "$1")
+  history_temp=$(echo "$CONFIG_DATA" | jq ".history | map(if(.name == \"$name\") then .dates = [\"$(date +"%Y-%m-%d_%H-%M-%S")\"] + .dates else . end)")
   CONFIG_DATA=$(echo "$CONFIG_DATA" | jq "select(.).history = $history_temp")
 }
 
@@ -312,11 +320,11 @@ choose_file() {
   # if most used flag is set, choose the most used file
   if [[ "$MOST_USED" == 1 ]]; then
     data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.popularity) | reverse")
-    FILE=$(echo "$data" | jq ".[0].path" | tr -d '"')
+    FILE=$(echo "$data" | jq ".[0].path + \"/\" + .[0].name" | tr -d '"')
   # else choose the latest edited file
   else
     data=$(echo "$PREPROCESSED_DATA" | jq "sort_by(.dates) | reverse")
-    FILE=$(echo "$data" | jq ".[0].path" | tr -d '"')
+    FILE=$(echo "$data" | jq ".[0].path + \"/\" + .[0].name" | tr -d '"')
   fi
   echo "$FILE"
 }
@@ -386,11 +394,11 @@ get_secret_log_path() {
 
 # Secret log command handler
 process_secret_log() {
-  FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.path)")
+  FILTERED_HISTORY=$(echo "$FILTERED_HISTORY" | jq " sort_by(.name)")
   range=$(echo "$FILTERED_HISTORY" | jq ". | length ")
   range=$((range - 1))
   for i in $(seq 0 "$range"); do
-    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].path);\(.[$i].dates | reverse | join(\";\"))\"" | tr -d '"')
+    line=$(echo "$FILTERED_HISTORY" | jq "\"\(.[$i].path + \"/\" + .[$i].name);\(.[$i].dates | reverse | join(\";\"))\"" | tr -d '"')
     echo "$line" | bzip2 >>"$(get_secret_log_path)"
   done
 }
