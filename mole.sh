@@ -350,6 +350,11 @@ process_open() {
 
   # if file is not set, choose file to open
   if [[ "$FILE" == "" ]]; then
+    # if history is empty, exit
+    if [[ $(echo "$CONFIG_DATA" | jq '.history') == [] ]]; then
+      >&2 echo "No files in history"
+      exit 1
+    fi
     FILE=$(choose_file)
   fi
   file_path=$(readlink -f "$FILE")
